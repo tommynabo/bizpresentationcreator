@@ -27,11 +27,27 @@ const path = require('path');
 // Token Storage
 const TOKEN_PATH = path.join(__dirname, 'tokens.json');
 
-// Load tokens on startup
-if (fs.existsSync(TOKEN_PATH)) {
+// Load tokens on startup (File System or Env Var)
+let tokensLoaded = false;
+
+// 1. Try Environment Variable (Vercel / Production)
+if (process.env.GOOGLE_TOKENS) {
+    try {
+        const tokens = JSON.parse(process.env.GOOGLE_TOKENS);
+        slides.setCredentials(tokens);
+        console.log('Loaded Google Auth tokens from GOOGLE_TOKENS env var.');
+        tokensLoaded = true;
+    } catch (e) {
+        console.error('Failed to parse GOOGLE_TOKENS env var:', e);
+    }
+}
+
+// 2. Try Local File (Development)
+if (!tokensLoaded && fs.existsSync(TOKEN_PATH)) {
     const tokens = JSON.parse(fs.readFileSync(TOKEN_PATH));
     slides.setCredentials(tokens);
     console.log('Loaded Google Auth tokens from disk.');
+    tokensLoaded = true;
 }
 
 // OAuth Routes
@@ -108,6 +124,10 @@ app.post('/api/generate-presentation', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
-});
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Server running at http://localhost:${PORT}`);
+    });
+}
+
+module.exports = app;

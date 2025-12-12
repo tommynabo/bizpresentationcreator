@@ -102,6 +102,78 @@ async function createPresentation(title, data) {
         });
     }
 
+    // --- NEW: Internal Briefing Slide (Index 0) ---
+    // We add a blank slide at the beginning and populate it.
+    const briefingSlideId = 'briefing_slide_01';
+    const titleBoxId = 'briefing_title_box';
+    const bodyBoxId = 'briefing_body_box';
+
+    requests.push({
+        createSlide: {
+            objectId: briefingSlideId,
+            insertionIndex: 0,
+            slideLayoutReference: { predefinedLayout: 'BLANK' }
+        }
+    });
+
+    // Add Title
+    requests.push({
+        createShape: {
+            objectId: titleBoxId,
+            shapeType: 'TEXT_BOX',
+            elementProperties: {
+                pageObjectId: briefingSlideId,
+                size: { height: { magnitude: 50, unit: 'PT' }, width: { magnitude: 600, unit: 'PT' } },
+                transform: { scaleX: 1, scaleY: 1, translateX: 50, translateY: 50, unit: 'PT' }
+            }
+        }
+    });
+    requests.push({
+        insertText: {
+            objectId: titleBoxId,
+            text: `INTERNAL BRIEFING - ${data.OUR_COMPANY_TITLE || 'CLIENTE'}`
+        }
+    });
+    requests.push({
+        updateTextStyle: {
+            objectId: titleBoxId,
+            style: { fontSize: { magnitude: 18, unit: 'PT' }, bold: true, foregroundColor: { opaqueColor: { rgbColor: { red: 0.8, green: 0, blue: 0 } } } },
+            fields: 'fontSize,bold,foregroundColor'
+        }
+    });
+
+    // Add Body Text
+    const briefingText =
+        `RESUMEN:\n${data.INTERNAL_BRIEF_SUMMARY || 'N/A'}\n\n` +
+        `SISTEMA SUGERIDO:\n${data.INTERNAL_BRIEF_SYSTEM || 'N/A'}\n\n` +
+        `INFO RELEVANTE:\n${data.INTERNAL_BRIEF_INFO || 'N/A'}`;
+
+    requests.push({
+        createShape: {
+            objectId: bodyBoxId,
+            shapeType: 'TEXT_BOX',
+            elementProperties: {
+                pageObjectId: briefingSlideId,
+                size: { height: { magnitude: 300, unit: 'PT' }, width: { magnitude: 600, unit: 'PT' } },
+                transform: { scaleX: 1, scaleY: 1, translateX: 50, translateY: 120, unit: 'PT' }
+            }
+        }
+    });
+    requests.push({
+        insertText: {
+            objectId: bodyBoxId,
+            text: briefingText
+        }
+    });
+    requests.push({
+        updateTextStyle: {
+            objectId: bodyBoxId,
+            style: { fontSize: { magnitude: 10, unit: 'PT' }, fontFamily: 'Arial' },
+            fields: 'fontSize,fontFamily'
+        }
+    });
+
+
     if (requests.length > 0) {
         await slides.presentations.batchUpdate({
             presentationId,

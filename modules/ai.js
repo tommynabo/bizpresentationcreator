@@ -97,7 +97,12 @@ async function generateSlideContent(profileText, conversationText, websiteUrl) {
     // SLIDE 25: CONTACTO
     "THANKS_EMAIL": "tomas@email.com",
     "THANKS_PHONE": "+34 600 000 000",
-    "THANKS_WEBSITE": "BizSlides.ai"
+    "THANKS_WEBSITE": "BizSlides.ai",
+
+    // INTERNAL SLIDE: BRIEFING
+    "INTERNAL_BRIEF_SUMMARY": "Resumen ejecutivo del cliente y su situación (máx 30 palabras).",
+    "INTERNAL_BRIEF_SYSTEM": "Sistema sugerido y por qué encaja (máx 30 palabras).",
+    "INTERNAL_BRIEF_INFO": "Info clave adicional para estudiar antes de la llamada (máx 30 palabras)."
     }
     `;
 
