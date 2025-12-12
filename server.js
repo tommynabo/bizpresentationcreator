@@ -61,7 +61,11 @@ app.get('/oauth2callback', async (req, res) => {
     try {
         const tokens = await slides.getToken(code);
         slides.setCredentials(tokens);
-        fs.writeFileSync(TOKEN_PATH, JSON.stringify(tokens));
+        try {
+            fs.writeFileSync(TOKEN_PATH, JSON.stringify(tokens));
+        } catch (writeErr) {
+            console.warn('Could not save tokens to disk (likely read-only fs). Please update GOOGLE_TOKENS env var with:', JSON.stringify(tokens));
+        }
         res.redirect('/?auth=success');
     } catch (error) {
         console.error('Error getting tokens:', error);
@@ -70,14 +74,15 @@ app.get('/oauth2callback', async (req, res) => {
 });
 
 app.get('/api/check-auth', (req, res) => {
-    res.json({ authenticated: fs.existsSync(TOKEN_PATH) });
+    res.json({ authenticated: tokensLoaded });
 });
 
 // Main API Endpoint
 app.post('/api/generate-presentation', async (req, res) => {
     try {
         // Enforce Auth
-        if (!fs.existsSync(TOKEN_PATH)) {
+        // Enforce Auth
+        if (!tokensLoaded) {
             return res.status(401).json({ error: 'Google Auth Required. Please visit /auth/google' });
         }
 
