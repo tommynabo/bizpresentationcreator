@@ -36,6 +36,42 @@ async function getToken(code) {
     return tokens;
 }
 
+
+
+// Ensure "Clientes" folder exists and return its ID
+async function ensureClientesFolder() {
+    const folderName = 'Clientes';
+    const q = `mimeType='application/vnd.google-apps.folder' and name='${folderName}' and trashed=false`;
+
+    try {
+        const res = await drive.files.list({
+            q: q,
+            fields: 'files(id, name)',
+            spaces: 'drive',
+        });
+
+        if (res.data.files.length > 0) {
+            console.log(`Folder '${folderName}' found: ${res.data.files[0].id}`);
+            return res.data.files[0].id;
+        } else {
+            console.log(`Folder '${folderName}' not found. Creating it...`);
+            const fileMetadata = {
+                name: folderName,
+                mimeType: 'application/vnd.google-apps.folder',
+            };
+            const file = await drive.files.create({
+                resource: fileMetadata,
+                fields: 'id',
+            });
+            console.log(`Folder '${folderName}' created: ${file.data.id}`);
+            return file.data.id;
+        }
+    } catch (err) {
+        console.error('Error ensuring Clientes folder:', err);
+        throw err; // Propagate error
+    }
+}
+
 async function createPresentation(title, data) {
     console.log(`Creating presentation: ${title}`);
 
@@ -44,6 +80,7 @@ async function createPresentation(title, data) {
         fileId: TEMPLATE_ID,
         requestBody: {
             name: title,
+            parents: [await ensureClientesFolder()] // Move to 'Clientes' folder
         },
     });
     const presentationId = copyRes.data.id;
@@ -123,30 +160,43 @@ async function createPresentation(title, data) {
             shapeType: 'TEXT_BOX',
             elementProperties: {
                 pageObjectId: briefingSlideId,
-                size: { height: { magnitude: 50, unit: 'PT' }, width: { magnitude: 600, unit: 'PT' } },
-                transform: { scaleX: 1, scaleY: 1, translateX: 50, translateY: 50, unit: 'PT' }
+                size: { height: { magnitude: 40, unit: 'PT' }, width: { magnitude: 650, unit: 'PT' } },
+                transform: { scaleX: 1, scaleY: 1, translateX: 30, translateY: 20, unit: 'PT' }
             }
         }
     });
+    const titleText = `${data.OUR_COMPANY_TITLE || 'CLIENTE'} (${data.BRIEF_CONTEXT_WHO || 'N/A'})`;
     requests.push({
         insertText: {
             objectId: titleBoxId,
-            text: `INTERNAL BRIEFING - ${data.OUR_COMPANY_TITLE || 'CLIENTE'}`
+            text: titleText.toUpperCase()
         }
     });
     requests.push({
         updateTextStyle: {
             objectId: titleBoxId,
-            style: { fontSize: { magnitude: 18, unit: 'PT' }, bold: true, foregroundColor: { opaqueColor: { rgbColor: { red: 0.8, green: 0, blue: 0 } } } },
+            style: { fontSize: { magnitude: 14, unit: 'PT' }, bold: true, foregroundColor: { opaqueColor: { rgbColor: { red: 0, green: 0, blue: 0 } } } },
             fields: 'fontSize,bold,foregroundColor'
         }
     });
 
-    // Add Body Text
+    // Add Battle Card Body
     const briefingText =
-        `RESUMEN:\n${data.INTERNAL_BRIEF_SUMMARY || 'N/A'}\n\n` +
-        `SISTEMA SUGERIDO:\n${data.INTERNAL_BRIEF_SYSTEM || 'N/A'}\n\n` +
-        `INFO RELEVANTE:\n${data.INTERNAL_BRIEF_INFO || 'N/A'}`;
+        `🧠 PARTE A: CONTEXTO RÁPIDO\n` +
+        `• Quién es: ${data.BRIEF_CONTEXT_WHO || 'N/A'}\n` +
+        `• Dolor: ${data.BRIEF_CONTEXT_PAIN || 'N/A'}\n` +
+        `• Estado: ${data.BRIEF_CONTEXT_STATUS || 'N/A'}\n` +
+        `• Gancho: ${data.BRIEF_CONTEXT_HOOK || 'N/A'}\n\n` +
+
+        `📝 PARTE B: GUION ESCANEABLE\n` +
+        `${data.BRIEF_SCRIPT_ICEBREAKER || 'N/A'}\n` +
+        `\n❓ Diagnóstico:\n` +
+        `- ${data.BRIEF_SCRIPT_DIAGNOSIS_1 || 'N/A'}\n` +
+        `- ${data.BRIEF_SCRIPT_DIAGNOSIS_2 || 'N/A'}\n` +
+        `- ${data.BRIEF_SCRIPT_DIAGNOSIS_3 || 'N/A'}\n` +
+        `\n💡 Solución: ${data.BRIEF_SCRIPT_SOLUTION || 'N/A'}\n` +
+        `🤝 Cierre: ${data.BRIEF_SCRIPT_CLOSING || 'N/A'}`;
+
 
     requests.push({
         createShape: {
@@ -154,8 +204,8 @@ async function createPresentation(title, data) {
             shapeType: 'TEXT_BOX',
             elementProperties: {
                 pageObjectId: briefingSlideId,
-                size: { height: { magnitude: 300, unit: 'PT' }, width: { magnitude: 600, unit: 'PT' } },
-                transform: { scaleX: 1, scaleY: 1, translateX: 50, translateY: 120, unit: 'PT' }
+                size: { height: { magnitude: 350, unit: 'PT' }, width: { magnitude: 650, unit: 'PT' } },
+                transform: { scaleX: 1, scaleY: 1, translateX: 30, translateY: 60, unit: 'PT' }
             }
         }
     });
@@ -168,10 +218,18 @@ async function createPresentation(title, data) {
     requests.push({
         updateTextStyle: {
             objectId: bodyBoxId,
-            style: { fontSize: { magnitude: 10, unit: 'PT' }, fontFamily: 'Arial' },
-            fields: 'fontSize,fontFamily'
+            style: {
+                fontSize: { magnitude: 9, unit: 'PT' },
+                fontFamily: 'Roboto',
+                foregroundColor: { opaqueColor: { rgbColor: { red: 0, green: 0, blue: 0 } } } // BLACK TEXT
+            },
+            fields: 'fontSize,fontFamily,foregroundColor'
         }
     });
+
+    // Make Headers Bold using Range (Approximation: we just set base style, explicit bolding ranges requires more logic or pure text)
+    // For simplicity, we keep it uniform but distinct by structure.
+
 
 
     if (requests.length > 0) {

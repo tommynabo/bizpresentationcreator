@@ -99,10 +99,20 @@ async function generateSlideContent(profileText, conversationText, websiteUrl) {
     "THANKS_PHONE": "+34 600 000 000",
     "THANKS_WEBSITE": "BizSlides.ai",
 
-    // INTERNAL SLIDE: BRIEFING
-    "INTERNAL_BRIEF_SUMMARY": "Resumen ejecutivo del cliente y su situación (máx 30 palabras).",
-    "INTERNAL_BRIEF_SYSTEM": "Sistema sugerido y por qué encaja (máx 30 palabras).",
-    "INTERNAL_BRIEF_INFO": "Info clave adicional para estudiar antes de la llamada (máx 30 palabras)."
+    // INTERNAL SLIDE: BRIEFING (SALES BATTLE CARD)
+    // PARTE A: CONTEXTO RÁPIDO
+    "BRIEF_CONTEXT_WHO": "Quién es (máx 20 palabras)",
+    "BRIEF_CONTEXT_PAIN": "Su Dolor principal (máx 20 palabras)",
+    "BRIEF_CONTEXT_STATUS": "Estado actual / Sistema híbrido (máx 20 palabras)",
+    "BRIEF_CONTEXT_HOOK": "Tu Gancho / Propuesta de valor (máx 20 palabras)",
+
+    // PARTE B: GUION ESCANEABLE
+    "BRIEF_SCRIPT_ICEBREAKER": "1. Hielo: Frase de rapport sobre su contexto (máx 30 palabras)",
+    "BRIEF_SCRIPT_DIAGNOSIS_1": "2. Diagnóstico: Pregunta clave 1 (máx 20 palabras)",
+    "BRIEF_SCRIPT_DIAGNOSIS_2": "2. Diagnóstico: Pregunta clave 2 (máx 20 palabras)",
+    "BRIEF_SCRIPT_DIAGNOSIS_3": "2. Diagnóstico: Pregunta clave 3 (máx 20 palabras)",
+    "BRIEF_SCRIPT_SOLUTION": "3. La Solución (Tu IA): Pitch corto (máx 40 palabras)",
+    "BRIEF_SCRIPT_CLOSING": "4. Cierre: Propuesta de piloto (máx 30 palabras)"
     }
     `;
 
